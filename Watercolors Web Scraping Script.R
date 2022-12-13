@@ -22,12 +22,10 @@ url <- "https://www.siriusxm.com/channels/watercolors"
 # Open siruisxm website
 remDr$navigate(url)
 
-# Find song name element
-song <- remDr$findElement(using = "class name", "card-spotlight--now-playing--song")
+# I really need to make the window half-size to be able to collect the text
+remDr$setWindowSize(width = 600, height = 731)
 
 
-# Find artist name element
-artist <- remDr$findElement(using = "class name", "card-spotlight--now-playing--artist")
 
 
 # Create empty dataframe
@@ -39,16 +37,24 @@ songs <-
 # Setup counter
 song_count <- 0
 
-while (song_count < 2) {
+while (song_count < 50) {
+  
+  # Find song name element
+  song <-
+    remDr$findElement(using = "class name", "card-spotlight--now-playing--song")
   
   # Get song name
-  song_name <- 
-    song$getElementText() |> 
+  song_name <-
+    song$getElementText() |>
     unlist()
   
+  # Find artist name element
+  artist <-
+    remDr$findElement(using = "class name", "card-spotlight--now-playing--artist")
+  
   # Get artist name
-  artist_name <- 
-    artist$getElementText() |> 
+  artist_name <-
+    artist$getElementText() |>
     unlist()
   
   # Save data in dataframe
@@ -63,11 +69,18 @@ while (song_count < 2) {
     song_count <- song_count + 1
   }
   
-  # Sleep so that R isn't constantly running
+  # Sleep for 30 seconds so that the while loop isn't constantly running
   Sys.sleep(60 * 0.5)
+  
+  # Refresh the page every 5 songs
+  if (length(songs$song) / 5 - (length(songs$song) / 5) == 0) {
+    remDr$refresh()
+  }
 }
 
+# Export data as a CSV
+write_csv(songs, 
+          paste0("watercolors", Sys.time(), ".csv"))
 
 
 # terminate the selenium server
-
