@@ -37,7 +37,7 @@ songs <-
 # Setup counter
 song_count <- 0
 
-while (song_count < 50) {
+while (song_count < 20) {
   
   # Find song name element
   song <-
@@ -84,3 +84,5 @@ write_csv(songs,
 
 
 # terminate the selenium server
+remDr$closeWindow()
+remDr$closeServer()
