@@ -37,7 +37,7 @@ songs <-
 # Setup counter
 song_count <- 0
 
-while (song_count < 20) {
+while (song_count < 100) {
   
   # Find song name element
   song <-
