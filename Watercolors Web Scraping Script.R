@@ -2,6 +2,9 @@ library(tidyverse)
 library(RSelenium)
 library(netstat)
 
+# Create folder to store CSVs
+dir.create("Raw Song CSVs")
+
 # List chrome versions
 binman::list_versions("chromedriver")
 
@@ -80,7 +83,8 @@ while (song_count < 50) {
 
 # Export data as a CSV
 write_csv(songs, 
-          paste0("watercolors", Sys.time(), ".csv"))
+          paste0("Raw Song CSVs/",
+                 "watercolors", Sys.time(), ".csv"))
 
 
 # terminate the selenium server
