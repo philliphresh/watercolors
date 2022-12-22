@@ -59,13 +59,41 @@ playlist_id <-
 # See what tracks are already on the playlist
 #   The first time the playlist is made this should be empty 
 #   but when I add more songs to the playlist it will not be.
-current_playlist_tracks <- get_playlist_tracks(playlist_id = playlist_id)
+get_current_playlist_tracks
+
+get_current_playlist_tracks <- 
+  function(playlist_id, ...) {
+    
+    current_playlist_tracks <- data.frame()
+    
+    for (i in 1:100000) {
+      playlist_tracks_100 <- 
+        get_playlist_tracks(playlist_id = playlist_id,
+                            fields = ...,
+                            limit = 100,
+                            offset = nrow(current_playlist_tracks))
+      
+      if (playlist_tracks_100 %>% is_empty()) {break}
+      
+      current_playlist_tracks <- rbind(current_playlist_tracks,
+                                       playlist_tracks_100)
+    }
+    
+    return(current_playlist_tracks)
+}
+
+current_playlist_tracks <- 
+  get_current_playlist_tracks(playlist_id = playlist_id,
+                            c("track.name", 
+                              "track.artists.name", 
+                              "track.uri"))
+
 
 # Remove tracks that are already on the playlist from the list to add
 filtered_search_results <- 
   search_results %>% 
   unnest(search_results) %>% 
-  filter(!(uri %in% current_playlist_tracks$track.uri))
+  anti_join(current_playlist_tracks, by = c("uri" = "track.uri"))
 
 # Add tracks to playlist
 #   since a maximum of 100 tracks can be added in one request, 
@@ -91,10 +119,16 @@ for (i in seq_along(1:(nrow(filtered_search_results) %/% 100 + 1))) {
 
 
 # Now I can check for duplicate songs and remove them if necessary
-current_playlist_tracks <- get_playlist_tracks(playlist_id = playlist_id)
+current_playlist_tracks <- 
+  get_current_playlist_tracks(playlist_id = playlist_id,
+                              c("track.name", 
+                                "track.artists.name", 
+                                "track.uri"))
+
 
 current_playlist_tracks %>% 
   tibble() %>% 
-  count(track.uri, sort = TRUE)
+  count(track.uri, sort = TRUE) %>% 
+  filter(n>1) %>% View()
 
 # no duplicates for now so we're good to go!
