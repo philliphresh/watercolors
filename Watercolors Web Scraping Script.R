@@ -3,16 +3,26 @@ library(RSelenium)
 library(netstat)
 
 # Create folder to store CSVs
-dir.create("Raw Song CSVs")
+# dir.create("Raw Song CSVs")
 
 # List chrome versions
 binman::list_versions("chromedriver")
 
+# Note I tried running this code in 2023-04-29 and had issues getting it to work. After a lot of head scratching I ultimately got it to work after deleting the license files from the folders here 
+# /Users/Phillip/Library/Application Support/binman_chromedriver/mac64
+# I learned to to this from watching Samer Hijjazi's video here
+# https://www.youtube.com/watch?v=GnpJujF9dBw&t=10s
+# 
+# You can run this to see where the chrome drivers are stored on your computer
+# selenium_object <- selenium(retcommand = TRUE, check = FALSE)
+# selenium_object
+
 # Start the server
 rs_driver_object <- rsDriver(browser = "chrome",
-                             chromever = "108.0.5359.71",
+                             chromever = "112.0.5615.49",
                              verbose = FALSE,
-                             port = netstat::free_port())
+                             port = netstat::free_port()
+                             )
 
 # Create a client object
 remDr <- rs_driver_object$client
@@ -40,7 +50,7 @@ songs <-
 # Setup counter
 song_count <- 0
 
-while (song_count < 200) {
+while (song_count < 300) {
   
   # Find song name element
   song <-
@@ -90,3 +100,4 @@ write_csv(songs,
 # terminate the selenium server
 remDr$closeWindow()
 remDr$closeServer()
+rs_driver_object$server$stop()

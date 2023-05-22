@@ -3,10 +3,14 @@ library(spotifyr)
 
 # Set credentials
 # I put my actual client id and client secret in the console
-# Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxxxxxxxxxxxxxx')
-# Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxxxxxxxxxxxxxxx')
+# Sys.setenv(SPOTIFY_CLIENT_ID = 'xxxxxxxxxxxxxxxxxxxxxxxxx')
+# Sys.setenv(SPOTIFY_CLIENT_SECRET = 'xxxxxxxxxxxxxxxxxxxxxxxxx')
 
 access_token <- get_spotify_access_token()
+# When I last tried this script, I had to play around with the authorization.
+# Basically, when I tried to run the function, get_my_playlists(), a Chrome browser opened to a page that said "Illegal scope".
+# On that page, I edited the URL by deleting the last 5 scopes, then hitting enter to go to the modified URL. At that point it took me a page that said something like "Access granted. Return to R."
+# I got the inspiration from this Github issue: https://github.com/charlie86/spotifyr/issues/198
 
 # Import track data
 tracks <- 
@@ -26,6 +30,7 @@ search_input <-
 #   when the query returns zero search results.
 search_results <- 
   search_input %>% 
+  filter(time_stamp > as.Date("2023-04-28")) %>% # Filter out songs that were searched last time I updated this playlist
   rowwise() %>% 
   mutate(search_results = list(search_spotify(query,
                                          type = "track",
@@ -51,10 +56,15 @@ create_playlist(
 # Figure out playlist id
 my_playlists <- get_my_playlists()
 
+
+
 playlist_id <- 
   my_playlists %>% 
   filter(name == "WatercoloRs") %>% 
   pull(id)
+# Based on the Spotify for Developers documentation response sample,
+# I believe the playlist id is 37i9dQZF1F0sijgNaJdgit
+# playlist_id <- "0NOrRXF4yK4T74s6UAl8P8"
 
 # See what tracks are already on the playlist
 #   The first time the playlist is made this should be empty 
@@ -129,6 +139,7 @@ current_playlist_tracks <-
 current_playlist_tracks %>% 
   tibble() %>% 
   count(track.uri, sort = TRUE) %>% 
-  filter(n>1) %>% View()
+  filter(n>1) %>% 
+  left_join(current_playlist_tracks, by = "track.uri") %>% View()
 
 # no duplicates for now so we're good to go!
